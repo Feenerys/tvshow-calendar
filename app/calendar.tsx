@@ -3,8 +3,15 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { EventInput } from "@fullcalendar/core/index.js";
 
-export default function Calendar() {
+interface CalendarProps {
+  events: EventInput[];
+}
+
+export default function Calendar(events: CalendarProps) {
+
+
   return (
     <FullCalendar
       plugins={[dayGridPlugin, interactionPlugin]}
@@ -15,28 +22,7 @@ export default function Calendar() {
         right: "dayGridMonth,dayGridWeek,dayGridDay",
       }}
       buttonText={{ today: "Today", month: "Month", week: "Week", day: "Day" }}
-      events={[
-        {
-          title: "One-Punch Man",
-          start: "2025-11-10T01:45:00",
-          end: "2025-11-10T02:09:00",
-          extendedProps: {
-            subtitle: "Monster King",
-            meta: "3x05 (29)",
-            color: "#22c55e",
-          },
-        },
-        {
-          title: "Smiling Friends",
-          start: "2025-11-10T15:30:00",
-          end: "2025-11-10T15:41:00",
-          extendedProps: {
-            subtitle: "Pim & Charlie Save…",
-            meta: "3x05",
-            color: "#60a5fa",
-          },
-        },
-      ]}
+      events={events}
       eventContent={(arg) => {
         const { subtitle, meta, color } = arg.event.extendedProps;
         return (
