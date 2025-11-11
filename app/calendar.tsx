@@ -4,12 +4,15 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventInput } from "@fullcalendar/core/index.js";
-
+import { useDisclosure } from "@mantine/hooks";
+import { Modal } from "@mantine/core";
 interface CalendarProps {
   events: EventInput[];
+  onEventClick: () => void;
 }
 
-export default function Calendar(events: CalendarProps) {
+export default function Calendar({ events, onEventClick }: CalendarProps) {
+
   return (
     <FullCalendar
       plugins={[dayGridPlugin, interactionPlugin]}
@@ -42,6 +45,7 @@ export default function Calendar(events: CalendarProps) {
           </div>
         );
       }}
+      eventClick={onEventClick}
     />
   );
 }
