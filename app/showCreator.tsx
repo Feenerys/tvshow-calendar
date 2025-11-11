@@ -54,7 +54,7 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
       <input
         type="button"
         value="Add Show"
-        className="border max-w-50 rounded-sm"
+        className="border rounded-sm"
         onClick={() => {
           if (!showName.trim() || episodeCount <= 0 || !dateStart) {
             alert("Please fill in all fields correctly.");

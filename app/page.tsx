@@ -6,25 +6,35 @@ import ShowCreator from "./showCreator";
 import { useState, useEffect } from "react";
 import { EventInput } from "@fullcalendar/core/index.js";
 
-
 export default function Home() {
   const [events, setEvents] = useState<EventInput[]>(() => {
-    if (typeof window === "undefined") return
+    if (typeof window === "undefined") return;
     const saved = localStorage.getItem("events");
     return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem("events", JSON.stringify(events))
-  }, [events])
+    localStorage.setItem("events", JSON.stringify(events));
+  }, [events]);
 
   return (
     <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black gap-5">
       <main className="mt-5 h-full w-full max-w-4xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
-       <Calendar events={events}/>
+        <Calendar events={events} />
       </main>
-      <main className="mt-5 h-full w-full max-w-xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
-        <ShowCreator onCreate={(newEvents) => setEvents(prev => [...prev, ...newEvents])}/>
+      <main className="flex flex-col gap-4 mt-5 h-full w-full max-w-xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
+        <ShowCreator
+          onCreate={(newEvents) => setEvents((prev) => [...prev, ...newEvents])}
+        />
+        <button
+          onClick={() => {
+            localStorage.removeItem("events");
+            setEvents([]);
+          }}
+          className="border rounded-sm px-2 py-1"
+        >
+          Clear All
+        </button>
       </main>
     </div>
   );

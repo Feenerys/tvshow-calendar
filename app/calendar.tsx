@@ -10,8 +10,6 @@ interface CalendarProps {
 }
 
 export default function Calendar(events: CalendarProps) {
-
-
   return (
     <FullCalendar
       plugins={[dayGridPlugin, interactionPlugin]}
@@ -23,6 +21,7 @@ export default function Calendar(events: CalendarProps) {
       }}
       buttonText={{ today: "Today", month: "Month", week: "Week", day: "Day" }}
       events={events}
+      editable
       eventContent={(arg) => {
         const { subtitle, meta, color } = arg.event.extendedProps;
         return (
