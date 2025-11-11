@@ -1,7 +1,8 @@
 "use client";
 
 import { EventInput } from "@fullcalendar/core/index.js";
-import { use, useState } from "react";
+import { useState } from "react";
+import { TextInput, Button } from "@mantine/core";
 
 interface ShowCreatorProps {
   onCreate: (newEvents: EventInput[]) => void;
@@ -10,16 +11,17 @@ interface ShowCreatorProps {
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
   const [episodeCount, setEpisodeCount] = useState<number>(0);
-  const [dateStart, setDateStart] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [dateStart, setDateStart] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
 
   return (
     <div className="flex gap-3 flex-col">
       <div>
-        <label htmlFor="showName">Show Name:</label>
-        <input
-          type="text"
-          id="showName"
-          className="border rounded-sm ml-3"
+        <TextInput
+          label="Show Name"
+          description="Enter the show's name"
+          placeholder="Show"
           value={showName}
           onChange={(e) => {
             setShowName(e.target.value);
@@ -27,11 +29,10 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
         />
       </div>
       <div>
-        <label htmlFor="episodeCount">Episodes:</label>
-        <input
+        <TextInput
           type="number"
-          id="episodeCount"
-          className="border rounded-sm ml-3"
+          label="Episodes"
+          description="Enter the show's episode count"
           value={episodeCount}
           onChange={(e) => {
             setEpisodeCount(Number(e.target.value || 0));
@@ -51,9 +52,8 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
         />
       </div>
 
-      <input
+      <Button
         type="button"
-        value="Add Show"
         className="border rounded-sm"
         onClick={() => {
           if (!showName.trim() || episodeCount <= 0 || !dateStart) {
@@ -62,7 +62,10 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
           }
           onCreate(generateEvents(showName.trim(), episodeCount, dateStart));
         }}
-      />
+      >
+        {" "}
+        Add Show
+      </Button>
     </div>
   );
 }
