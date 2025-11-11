@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Calendar from "./calendar";
 import ShowCreator from "./showCreator";
 import { useState, useEffect } from "react";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { EventImpl } from "@fullcalendar/core/internal";
-import { Button, TextInput } from "@mantine/core";
+import { Button } from "@mantine/core";
 
 import { useDisclosure } from "@mantine/hooks";
 import { Modal } from "@mantine/core";
@@ -27,10 +26,30 @@ export default function Home() {
   return (
     <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black text-foreground gap-5">
       <Modal opened={opened} onClose={close} title={activeEvent?.title}>
-        
+        <Button
+          onClick={() => {
+            if (!activeEvent) return;
+            setEvents((prev) =>
+              prev.filter(
+                (e) =>
+                  e.title !== activeEvent.title ||
+                  e.start !== activeEvent.startStr
+              )
+            );
+            close();
+          }}
+        >
+          Delete
+        </Button>
       </Modal>
       <main className="mt-5 h-full w-full max-w-4xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
-        <Calendar events={events} onEventClick={(event) => { setActiveEvent(event.event); open(); }} />
+        <Calendar
+          events={events}
+          onEventClick={(event) => {
+            setActiveEvent(event.event);
+            open();
+          }}
+        />
       </main>
       <main className="flex flex-col gap-4 mt-5 h-full w-full max-w-xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
         <ShowCreator
