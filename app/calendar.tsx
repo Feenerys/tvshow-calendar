@@ -6,9 +6,10 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { useDisclosure } from "@mantine/hooks";
 import { Modal } from "@mantine/core";
+import { EventClickArg } from "@fullcalendar/core/index.js";
 interface CalendarProps {
   events: EventInput[];
-  onEventClick: () => void;
+  onEventClick: (event: EventClickArg) => void
 }
 
 export default function Calendar({ events, onEventClick }: CalendarProps) {
@@ -45,7 +46,8 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
           </div>
         );
       }}
-      eventClick={onEventClick}
+      eventClick={(info) => onEventClick(info)}
+
     />
   );
 }
