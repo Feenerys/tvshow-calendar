@@ -26,7 +26,7 @@ export default function Calendar(events: CalendarProps) {
         const { subtitle, meta, color } = arg.event.extendedProps;
         return (
           <div
-            className="pl-2 overflow-x-hidden"
+            className="pl-2 overflow-x-hidden  text-foreground"
             style={{ borderLeft: `4px solid ${color || "#888"}` }}
           >
             <div className="text-sm font-medium leading-snug">

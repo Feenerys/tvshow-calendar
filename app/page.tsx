@@ -5,6 +5,8 @@ import Calendar from "./calendar";
 import ShowCreator from "./showCreator";
 import { useState, useEffect } from "react";
 import { EventInput } from "@fullcalendar/core/index.js";
+import { Button } from '@mantine/core';
+
 
 export default function Home() {
   const [events, setEvents] = useState<EventInput[]>(() => {
@@ -18,7 +20,7 @@ export default function Home() {
   }, [events]);
 
   return (
-    <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black gap-5">
+    <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black text-foreground gap-5">
       <main className="mt-5 h-full w-full max-w-4xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
         <Calendar events={events} />
       </main>
@@ -26,7 +28,7 @@ export default function Home() {
         <ShowCreator
           onCreate={(newEvents) => setEvents((prev) => [...prev, ...newEvents])}
         />
-        <button
+        <Button
           onClick={() => {
             localStorage.removeItem("events");
             setEvents([]);
@@ -34,7 +36,7 @@ export default function Home() {
           className="border rounded-sm px-2 py-1"
         >
           Clear All
-        </button>
+        </Button>
       </main>
     </div>
   );
