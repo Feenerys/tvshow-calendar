@@ -3,12 +3,20 @@
 import Image from "next/image";
 import Calendar from "./calendar";
 import ShowCreator from "./showCreator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EventInput } from "@fullcalendar/core/index.js";
 
 
 export default function Home() {
-  const [events, setEvents] = useState<EventInput[]>([]);
+  const [events, setEvents] = useState<EventInput[]>(() => {
+    if (typeof window === "undefined") return
+    const saved = localStorage.getItem("events");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("events", JSON.stringify(events))
+  }, [events])
 
   return (
     <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black gap-5">
