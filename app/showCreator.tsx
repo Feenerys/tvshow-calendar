@@ -10,7 +10,7 @@ interface ShowCreatorProps {
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
   const [episodeCount, setEpisodeCount] = useState<number>(0);
-  const [dateStart, setDateStart] = useState<string>("");
+  const [dateStart, setDateStart] = useState<string>(new Date().toISOString().split("T")[0]);
 
   return (
     <div className="flex gap-3 flex-col">
@@ -86,7 +86,7 @@ function generateEvents(
       extendedProps: {
         subtitle: `Episode ${i + 1}`,
         meta: `Season 1`,
-        color: "#3498db",
+        color: "#5D9CEC",
       },
     });
   }
