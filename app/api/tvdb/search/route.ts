@@ -31,7 +31,7 @@ async function ensureToken() {
 
 async function search(query: string) {
   await ensureToken()
-  const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&type=series`,
+  const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&type=series&limit=25`,
     {headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`}}
