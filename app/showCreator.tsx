@@ -103,6 +103,7 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
               src={activeShow?.image}
               alt={`${activeShow?.name} artwork`}
               width={150}
+              className="h-50"
             />
             <div className="flex flex-col gap-4">
               {activeShow?.overview}
