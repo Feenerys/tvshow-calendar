@@ -66,6 +66,13 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
         {" "}
         Add Show
       </Button>
+
+      <Button
+      onClick={() => {
+        handleSearch(showName.trim())
+      }}>
+        Search
+      </Button>
     </div>
   );
 }
@@ -95,4 +102,11 @@ function generateEvents(
   }
 
   return events;
+}
+
+
+async function handleSearch(query: string) {
+  const res = await fetch(`/api/tvdb/search?q=${encodeURIComponent(query)}`)
+  const data = await res.json()
+  console.log(data)
 }
