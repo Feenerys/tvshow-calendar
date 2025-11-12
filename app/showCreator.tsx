@@ -7,6 +7,13 @@ import { TextInput, Button } from "@mantine/core";
 interface ShowCreatorProps {
   onCreate: (newEvents: EventInput[]) => void;
 }
+interface TvdbShow {
+  id: number;
+  name: string;
+  image?: string;
+  year?: string;
+  overview?: string;
+}
 
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
@@ -15,20 +22,36 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
     new Date().toISOString().split("T")[0]
   );
 
+  const [shows, setShows] = useState<[TvdbShow]>([]);
+
+  async function handleSearch(query: string) {
+    const res = await fetch(`/api/tvdb/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    setShows(data.data.map(normaliseShow));
+  }
+
   return (
     <div className="flex gap-3 flex-col">
-      <div>
+      <div className="flex items-end gap-5">
         <TextInput
           label="Show Name"
           description="Enter the show's name"
           placeholder="Show"
+          className="flex-1"
           value={showName}
           onChange={(e) => {
             setShowName(e.target.value);
           }}
         />
+        <Button
+          onClick={() => {
+            handleSearch(showName.trim());
+          }}
+        >
+          Search
+        </Button>
       </div>
-      <div>
+      {/* <div>
         <TextInput
           type="number"
           label="Episodes"
@@ -65,14 +88,18 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
       >
         {" "}
         Add Show
-      </Button>
-
-      <Button
-      onClick={() => {
-        handleSearch(showName.trim())
-      }}>
-        Search
-      </Button>
+      </Button> */}
+      <div className="flex flex-col gap-2">
+        {shows.map((show, index) => (
+          <div key={index} className="flex h-30 gap-4 ">
+            <img src={show.image} alt={`${show.name} artwork`} />
+            <div className="self-center flex justify-between w-full">
+              {show.name}
+              <Button>Add</Button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -100,13 +127,15 @@ function generateEvents(
       },
     });
   }
-
   return events;
 }
 
-
-async function handleSearch(query: string) {
-  const res = await fetch(`/api/tvdb/search?q=${encodeURIComponent(query)}`)
-  const data = await res.json()
-  console.log(data)
+function normaliseShow(tvdb: any): TvdbShow {
+  return {
+    id: tvdb.id,
+    name: tvdb.translations?.eng || tvdb.name,
+    image: tvdb.image_url || tvdb.thumbnail,
+    year: tvdb.year || tvdb.firstAired?.split("-")[0],
+    overview: tvdb.overviews?.eng || tvdb.overview,
+  };
 }

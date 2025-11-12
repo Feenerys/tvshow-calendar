@@ -55,7 +55,7 @@ export default function Home() {
         <ShowCreator
           onCreate={(newEvents) => setEvents((prev) => [...prev, ...newEvents])}
         />
-        <Button
+        {/* <Button
           onClick={() => {
             localStorage.removeItem("events");
             setEvents([]);
@@ -63,7 +63,7 @@ export default function Home() {
           className="border rounded-sm px-2 py-1"
         >
           Clear All
-        </Button>
+        </Button> */}
       </main>
     </div>
   );
