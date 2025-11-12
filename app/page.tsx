@@ -24,7 +24,7 @@ export default function Home() {
   }, [events]);
 
   return (
-    <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black text-foreground gap-5">
+    <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black text-foreground gap-5 p-5">
       <Modal opened={opened} onClose={close} title={activeEvent?.title}>
         <Button
           onClick={() => {
@@ -42,7 +42,7 @@ export default function Home() {
           Delete
         </Button>
       </Modal>
-      <main className="mt-5 h-full w-full max-w-4xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
+      <main className=" h-full w-full max-w-4xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
         <Calendar
           events={events}
           onEventClick={(event) => {
@@ -51,7 +51,7 @@ export default function Home() {
           }}
         />
       </main>
-      <main className="flex flex-col gap-4 mt-5 h-full w-full max-w-xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
+      <main className="flex flex-col gap-4  h-full w-full max-w-xl rounded-lg bg-white p-10 shadow-lg dark:bg-zinc-900">
         <ShowCreator
           onCreate={(newEvents) => setEvents((prev) => [...prev, ...newEvents])}
         />
