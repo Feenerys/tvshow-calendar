@@ -36,11 +36,14 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
         <TextInput
           label="Show Name"
           description="Enter the show's name"
-          placeholder="Show"
+          placeholder="One Piece"
           className="flex-1"
           value={showName}
           onChange={(e) => {
             setShowName(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key == "Enter") handleSearch(showName.trim());
           }}
         />
         <Button
