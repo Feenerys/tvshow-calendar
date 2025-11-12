@@ -3,6 +3,8 @@
 import { EventInput } from "@fullcalendar/core/index.js";
 import { useState } from "react";
 import { TextInput, Button } from "@mantine/core";
+import { Modal } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 
 interface ShowCreatorProps {
   onCreate: (newEvents: EventInput[]) => void;
@@ -17,12 +19,14 @@ interface TvdbShow {
 
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
-  const [episodeCount, setEpisodeCount] = useState<number>(0);
+  const [episodeCount, setEpisodeCount] = useState<number>();
   const [dateStart, setDateStart] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
+  const [opened, { open, close }] = useDisclosure(false);
 
-  const [shows, setShows] = useState<[TvdbShow]>([]);
+  const [shows, setShows] = useState<TvdbShow[]>([]);
+  const [activeShow, setActiveShow] = useState<TvdbShow | null>(null);
 
   async function handleSearch(query: string) {
     const res = await fetch(`/api/tvdb/search?q=${encodeURIComponent(query)}`);
@@ -93,12 +97,41 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
         Add Show
       </Button> */}
       <div className="flex flex-col gap-2">
+        <Modal opened={opened} onClose={close} title={activeShow?.name}>
+          <div className="flex gap-4">
+            <img
+              src={activeShow?.image}
+              alt={`${activeShow?.name} artwork`}
+              width={150}
+            />
+            <div className="flex flex-col gap-4">
+              {activeShow?.overview}
+              <TextInput
+                type="number"
+                label="Episode Start"
+                description="Enter the show's starting episode"
+                value={episodeCount}
+                onChange={(e) => {
+                  setEpisodeCount(Number(e.target.value ));
+                }}
+              />
+            </div>
+          </div>
+        </Modal>
+
         {shows.map((show, index) => (
           <div key={index} className="flex h-30 gap-4 ">
             <img src={show.image} alt={`${show.name} artwork`} />
             <div className="self-center flex justify-between w-full">
               {show.name}
-              <Button>Add</Button>
+              <Button
+                onClick={() => {
+                  setActiveShow(show);
+                  open();
+                }}
+              >
+                Add
+              </Button>
             </div>
           </div>
         ))}
