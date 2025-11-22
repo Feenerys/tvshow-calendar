@@ -15,8 +15,15 @@ interface TvdbShow {
   image?: string;
   year?: string;
   overview?: string;
-  episodes?: [];
+  episodes?: Episode[];
 }
+
+type Episode = {
+  seasonNumber?: number;
+  number?: number;
+  absoluteNumber?: number;
+  isMovie?: number;
+};
 
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
@@ -35,13 +42,31 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
     setShows(data.data.map(normaliseShow));
   }
 
+  const normaliseEpisodes = (episodes: Episode[]) => {
+    const mainline = episodes.filter(
+      (e) => e.isMovie !== 1 && (e.seasonNumber ?? 0) > 0 && (e.number ?? 0) > 0
+    );
+
+    // If absoluteNumber is present, use it to dedupe “true” episodes
+    const hasAbsolute = mainline.some((e) => (e.absoluteNumber ?? 0) > 0);
+    if (!hasAbsolute) return mainline;
+
+    const byAbs = new Map<number, Episode>();
+    for (const e of mainline) {
+      if ((e.absoluteNumber ?? 0) > 0 && !byAbs.has(e.absoluteNumber!)) {
+        byAbs.set(e.absoluteNumber!, e);
+      }
+    }
+    return [...byAbs.values()];
+  };
+
   async function seriesEpisodes(id: number | undefined) {
-    if (id == undefined) return []
+    if (id == undefined) return [];
     const res = await fetch(`/api/tvdb/series?id=${id}`);
     const data = await res.json();
     const episodes =
-      data.data?.episodes.filter((episode) => episode.absoluteNumber > 0) || [];
-    return episodes
+      normaliseEpisodes(data.data?.episodes ?? []);
+    return episodes;
   }
 
   return (
@@ -117,9 +142,7 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
             />
             <div className="flex flex-col gap-4">
               {activeShow?.overview}
-              <div>
-                Total Episodes: {activeShow?.episodes?.length}
-              </div>
+              <div>Total Episodes: {activeShow?.episodes?.length}</div>
               <TextInput
                 type="number"
                 label="Episode Start"
@@ -139,10 +162,9 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
             <div className="self-center flex justify-between w-full">
               {show.name}
               <Button
-                onClick={() => {
-                  const eps = seriesEpisodes(show.id)
-                  console.log(eps.)
-                  show.episodes = eps
+                onClick={async () => {
+                  const eps = await seriesEpisodes(show.id);
+                  show.episodes = eps;
                   setActiveShow(show);
                   open();
                 }}
