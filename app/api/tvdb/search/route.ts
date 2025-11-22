@@ -23,10 +23,10 @@ async function login() {
   tokenExpires = Date.now() + oneMonthMs  
 }
 
-async function ensureToken() {
-  if (token != null && Date.now() < tokenExpires) return 
-  console.log(!!process.env.TVDB_API_KEY)
+export async function ensureToken() {
+  if (token != null && Date.now() < tokenExpires) return token
   await login()
+  return token
 }
 
 async function search(query: string) {

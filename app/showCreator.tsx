@@ -15,6 +15,7 @@ interface TvdbShow {
   image?: string;
   year?: string;
   overview?: string;
+  episodes?: [];
 }
 
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
@@ -32,6 +33,15 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
     const res = await fetch(`/api/tvdb/search?q=${encodeURIComponent(query)}`);
     const data = await res.json();
     setShows(data.data.map(normaliseShow));
+  }
+
+  async function seriesEpisodes(id: number | undefined) {
+    if (id == undefined) return []
+    const res = await fetch(`/api/tvdb/series?id=${id}`);
+    const data = await res.json();
+    const episodes =
+      data.data?.episodes.filter((episode) => episode.absoluteNumber > 0) || [];
+    return episodes
   }
 
   return (
@@ -107,13 +117,16 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
             />
             <div className="flex flex-col gap-4">
               {activeShow?.overview}
+              <div>
+                Total Episodes: {activeShow?.episodes?.length}
+              </div>
               <TextInput
                 type="number"
                 label="Episode Start"
                 description="Enter the show's starting episode"
                 value={episodeCount}
                 onChange={(e) => {
-                  setEpisodeCount(Number(e.target.value ));
+                  setEpisodeCount(Number(e.target.value));
                 }}
               />
             </div>
@@ -127,6 +140,9 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
               {show.name}
               <Button
                 onClick={() => {
+                  const eps = seriesEpisodes(show.id)
+                  console.log(eps.)
+                  show.episodes = eps
                   setActiveShow(show);
                   open();
                 }}
@@ -169,7 +185,7 @@ function generateEvents(
 
 function normaliseShow(tvdb: any): TvdbShow {
   return {
-    id: tvdb.id,
+    id: tvdb.id.split("-")[1],
     name: tvdb.translations?.eng || tvdb.name,
     image: tvdb.image_url || tvdb.thumbnail,
     year: tvdb.year || tvdb.firstAired?.split("-")[0],
