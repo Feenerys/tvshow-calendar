@@ -24,6 +24,7 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
       buttonText={{ today: "Today", month: "Month", week: "Week", day: "Day" }}
       events={events}
       editable
+      eventDurationEditable={false}
       eventContent={(arg) => {
         const { subtitle, meta, color } = arg.event.extendedProps;
         return (
