@@ -7,11 +7,10 @@ import { EventInput } from "@fullcalendar/core/index.js";
 import { EventClickArg } from "@fullcalendar/core/index.js";
 interface CalendarProps {
   events: EventInput[];
-  onEventClick: (event: EventClickArg) => void
+  onEventClick: (event: EventClickArg) => void;
 }
 
 export default function Calendar({ events, onEventClick }: CalendarProps) {
-
   return (
     <FullCalendar
       plugins={[dayGridPlugin, interactionPlugin]}
@@ -28,16 +27,24 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
         const { subtitle, meta, color } = arg.event.extendedProps;
         return (
           <div
-            className="pl-2 overflow-x-hidden  text-foreground"
+            className="pl-2 mt-1 overflow-hidden text-foreground border-b border-b-gray-500/40"
             style={{ borderLeft: `4px solid ${color || "#888"}` }}
           >
-            <div className="text-sm font-medium leading-snug">
+            <div
+              className="text-sm font-medium leading-snug text-ellipsis overflow-hidden whitespace-nowrap"
+              title={arg.event.title}
+            >
               {arg.event.title}
             </div>
             {subtitle && (
-              <div className="text-xs opacity-80 truncate">{subtitle}</div>
+              <div
+                className="text-xs  text-ellipsis overflow-hidden whitespace-nowrap"
+                title={subtitle}
+              >
+                {subtitle}
+              </div>
             )}
-            <div className="text-[11px] opacity-70 mt-0.5">
+            <div className="text-[11px] mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap">
               {arg.timeText}
               {meta ? ` • ${meta}` : ""}
             </div>
@@ -45,7 +52,6 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
         );
       }}
       eventClick={(info) => onEventClick(info)}
-
     />
   );
 }

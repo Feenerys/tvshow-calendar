@@ -312,7 +312,7 @@ function createShowEvents(
     const number = episode.number ?? normalizedEpisode + index;
 
     return {
-      title: `${showName} - S${season}E${number}`,
+      title: `${showName} - Episode ${number}`,
       start: date.format("YYYY-MM-DD"),
       allDay: true,
       extendedProps: {
