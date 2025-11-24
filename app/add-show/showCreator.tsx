@@ -12,7 +12,7 @@ interface ShowCreatorProps {
   onCreate: (newEvents: EventInput[]) => void;
 }
 interface TvdbShow {
-  id: number;
+  id: string;
   name: string;
   image?: string;
   year?: string;
@@ -76,7 +76,7 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   };
 
   async function seriesEpisodes(
-    id: number | undefined
+    id: string | undefined
   ): Promise<SeriesEpisodesResult> {
     if (id == undefined) {
       return {
@@ -124,7 +124,8 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
       activeShow.name,
       activeShow.episodes ?? [],
       episodeCount ?? 1,
-      dateStart
+      dateStart,
+      activeShow.id
     );
 
     if (!events.length) return;
@@ -281,7 +282,8 @@ function createShowEvents(
   showName: string,
   episodes: Episode[],
   startingEpisode: number,
-  dateStart: string | null
+  dateStart: string | null,
+  seriesId?: string
 ): EventInput[] {
   if (!dateStart) return [];
 
@@ -315,6 +317,7 @@ function createShowEvents(
       title: `${showName} - Episode ${number}`,
       start: date.format("YYYY-MM-DD"),
       allDay: true,
+      groupId: seriesId,
       extendedProps: {
         subtitle: `Episode ${number}`,
         meta: `Season ${season}`,
