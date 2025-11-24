@@ -5,6 +5,7 @@ import { useState } from "react";
 import { TextInput, Button } from "@mantine/core";
 import { Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { DatePickerInput } from "@mantine/dates";
 
 interface ShowCreatorProps {
   onCreate: (newEvents: EventInput[]) => void;
@@ -40,9 +41,7 @@ type SeriesEpisodesResult = {
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
   const [episodeCount, setEpisodeCount] = useState<number>();
-  const [dateStart, setDateStart] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
+  const [dateStart, setDateStart] = useState<string | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
 
   const [shows, setShows] = useState<TvdbShow[]>([]);
@@ -87,8 +86,7 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
     const res = await fetch(`/api/tvdb/series?id=${id}`);
     const data = await res.json();
 
-    const episodes =
-      normaliseEpisodes(data.data?.episodes ?? []);
+    const episodes = normaliseEpisodes(data.data?.episodes ?? []);
 
     const averageRuntime = data.data?.averageRuntime;
 
@@ -133,46 +131,9 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
           Search
         </Button>
       </div>
-      {/* <div>
-        <TextInput
-          type="number"
-          label="Episodes"
-          description="Enter the show's episode count"
-          value={episodeCount}
-          onChange={(e) => {
-            setEpisodeCount(Number(e.target.value || 0));
-          }}
-        />
-      </div>
-      <div>
-        <label htmlFor="dateStartSelect">Date Start:</label>
-        <input
-          type="date"
-          id="dateStartSelect"
-          className="border rounded-sm ml-3"
-          value={dateStart}
-          onChange={(e) => {
-            setDateStart(e.target.value);
-          }}
-        />
-      </div>
 
-      <Button
-        type="button"
-        className="border rounded-sm"
-        onClick={() => {
-          if (!showName.trim() || episodeCount <= 0 || !dateStart) {
-            alert("Please fill in all fields correctly.");
-            return;
-          }
-          onCreate(generateEvents(showName.trim(), episodeCount, dateStart));
-        }}
-      >
-        {" "}
-        Add Show
-      </Button> */}
       <div className="flex flex-col gap-2">
-        <Modal opened={opened} onClose={close} title={activeShow?.name}>
+        <Modal opened={opened} onClose={close} size="100%" title={activeShow?.name} >
           <div className="flex gap-4">
             <img
               src={activeShow?.image}
@@ -180,7 +141,7 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
               width={150}
               className="h-50"
             />
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 w-full">
               {activeShow?.overview}
               <div className="flex flex-col gap-1 text-sm">
                 <span>Episodes: {activeShow?.episodes?.length ?? 0}</span>
@@ -198,10 +159,18 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
                 label="Episode Start"
                 description="Enter the show's starting episode"
                 value={episodeCount}
+                placeholder="1"
                 onChange={(e) => {
                   setEpisodeCount(Number(e.target.value));
                 }}
               />
+              <DatePickerInput
+                label="Pick Start Date"
+                placeholder="Pick date"
+                value={dateStart}
+                onChange={setDateStart}
+              />
+              <Button variant="filled" >Add</Button>
             </div>
           </div>
         </Modal>
