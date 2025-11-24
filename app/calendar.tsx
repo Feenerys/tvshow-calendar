@@ -20,6 +20,7 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
         center: "title",
         right: "dayGridMonth,dayGridWeek,dayGridDay",
       }}
+      contentHeight="auto"
       buttonText={{ today: "Today", month: "Month", week: "Week", day: "Day" }}
       events={events}
       editable
@@ -52,6 +53,7 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
         );
       }}
       eventClick={(info) => onEventClick(info)}
+      
     />
   );
 }
