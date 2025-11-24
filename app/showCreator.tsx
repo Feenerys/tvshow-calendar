@@ -16,6 +16,9 @@ interface TvdbShow {
   year?: string;
   overview?: string;
   episodes?: Episode[];
+  averageRuntime?: number;
+  totalAired?: number;
+  totalUpcoming?: number;
 }
 
 type Episode = {
@@ -23,6 +26,15 @@ type Episode = {
   number?: number;
   absoluteNumber?: number;
   isMovie?: number;
+  runtime?: number | null;
+  aired?: string;
+};
+
+type SeriesEpisodesResult = {
+  episodes: Episode[];
+  averageRuntime?: number;
+  totalAired: number;
+  totalUpcoming: number;
 };
 
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
@@ -60,13 +72,41 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
     return [...byAbs.values()];
   };
 
-  async function seriesEpisodes(id: number | undefined) {
-    if (id == undefined) return [];
+  async function seriesEpisodes(
+    id: number | undefined
+  ): Promise<SeriesEpisodesResult> {
+    if (id == undefined) {
+      return {
+        episodes: [],
+        averageRuntime: undefined,
+        totalAired: 0,
+        totalUpcoming: 0,
+      };
+    }
+
     const res = await fetch(`/api/tvdb/series?id=${id}`);
     const data = await res.json();
+
     const episodes =
       normaliseEpisodes(data.data?.episodes ?? []);
-    return episodes;
+
+    const averageRuntime = data.data?.averageRuntime;
+
+    const today = new Date();
+    const totalAired = episodes.filter((episode) => {
+      if (!episode.aired) return false;
+      const airedAt = new Date(episode.aired);
+      return airedAt <= today;
+    }).length;
+
+    const totalUpcoming = Math.max(episodes.length - totalAired, 0);
+
+    return {
+      episodes,
+      averageRuntime,
+      totalAired,
+      totalUpcoming,
+    };
   }
 
   return (
@@ -142,7 +182,17 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
             />
             <div className="flex flex-col gap-4">
               {activeShow?.overview}
-              <div>Total Episodes: {activeShow?.episodes?.length}</div>
+              <div className="flex flex-col gap-1 text-sm">
+                <span>Episodes: {activeShow?.episodes?.length ?? 0}</span>
+                <span>Aired: {activeShow?.totalAired ?? 0}</span>
+                <span>Upcoming: {activeShow?.totalUpcoming ?? 0}</span>
+                <span>
+                  Average Runtime:{" "}
+                  {activeShow?.averageRuntime
+                    ? `${activeShow.averageRuntime} min`
+                    : "N/A"}
+                </span>
+              </div>
               <TextInput
                 type="number"
                 label="Episode Start"
@@ -163,9 +213,20 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
               {show.name}
               <Button
                 onClick={async () => {
-                  const eps = await seriesEpisodes(show.id);
-                  show.episodes = eps;
-                  setActiveShow(show);
+                  const {
+                    episodes,
+                    averageRuntime,
+                    totalAired,
+                    totalUpcoming,
+                  } = await seriesEpisodes(show.id);
+                  const enrichedShow: TvdbShow = {
+                    ...show,
+                    episodes,
+                    averageRuntime,
+                    totalAired,
+                    totalUpcoming,
+                  };
+                  setActiveShow(enrichedShow);
                   open();
                 }}
               >
