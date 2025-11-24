@@ -42,6 +42,8 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
   const [episodeCount, setEpisodeCount] = useState<number>();
   const [dateStart, setDateStart] = useState<string | null>(null);
+  const [episodeStartError, setEpisodeStartError] = useState<string | null>(null);
+  const [dateStartError, setDateStartError] = useState<string | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
 
   const [shows, setShows] = useState<TvdbShow[]>([]);
@@ -107,6 +109,37 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
     };
   }
 
+  const handleAdd = () => {
+    const hasEpisode = typeof episodeCount === "number" && episodeCount > 0;
+    const hasDate = Boolean(dateStart);
+
+    setEpisodeStartError(
+      hasEpisode ? null : "Episode start is required"
+    );
+    setDateStartError(hasDate ? null : "Pick a start date");
+
+    if (!hasEpisode || !hasDate) return;
+
+    // Additional add logic (event creation etc.) can be inserted here.
+  };
+
+  const handleDateChange = (value: Date | string | null) => {
+    if (!value) {
+      setDateStart(null);
+    } else if (value instanceof Date) {
+      setDateStart(value.toISOString().split("T")[0]);
+    } else {
+      setDateStart(value);
+    }
+    setDateStartError(null);
+  };
+
+  const handleClose = () => {
+    setEpisodeStartError(null);
+    setDateStartError(null);
+    close();
+  };
+
   return (
     <div className="flex gap-3 flex-col">
       <div className="flex items-end gap-5">
@@ -133,7 +166,7 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Modal opened={opened} onClose={close} size="100%" title={activeShow?.name} >
+        <Modal opened={opened} onClose={handleClose} size="100%" title={activeShow?.name} >
           <div className="flex gap-4">
             <img
               src={activeShow?.image}
@@ -160,17 +193,22 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
                 description="Enter the show's starting episode"
                 value={episodeCount}
                 placeholder="1"
+                error={episodeStartError ?? undefined}
                 onChange={(e) => {
                   setEpisodeCount(Number(e.target.value));
+                  setEpisodeStartError(null);
                 }}
               />
               <DatePickerInput
                 label="Pick Start Date"
                 placeholder="Pick date"
                 value={dateStart}
-                onChange={setDateStart}
+                error={dateStartError ?? undefined}
+                onChange={handleDateChange}
               />
-              <Button variant="filled" >Add</Button>
+              <Button variant="filled" onClick={handleAdd}>
+                Add
+              </Button>
             </div>
           </div>
         </Modal>
