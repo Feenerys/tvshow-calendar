@@ -43,10 +43,6 @@ a.fc-event.fc-daygrid-event[href]:visited {
   z-index: 3;
 }
 
-:not(td[aria-labelledby]) > .fc-daygrid-day-frame {
-  background: var(--fc-neutral-bg-color);
-}
-
 .fc .fc-scrollgrid-section-body {
   background: var(--fc-page-bg-color);
 }
