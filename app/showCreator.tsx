@@ -1,5 +1,6 @@
 "use client";
 
+import dayjs from "dayjs";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { useState } from "react";
 import { TextInput, Button } from "@mantine/core";
@@ -40,9 +41,11 @@ type SeriesEpisodesResult = {
 
 export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   const [showName, setShowName] = useState<string>("");
-  const [episodeCount, setEpisodeCount] = useState<number>();
+  const [episodeCount, setEpisodeCount] = useState<number>(1);
   const [dateStart, setDateStart] = useState<string | null>(null);
-  const [episodeStartError, setEpisodeStartError] = useState<string | null>(null);
+  const [episodeStartError, setEpisodeStartError] = useState<string | null>(
+    null
+  );
   const [dateStartError, setDateStartError] = useState<string | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
 
@@ -60,7 +63,6 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
       (e) => e.isMovie !== 1 && (e.seasonNumber ?? 0) > 0 && (e.number ?? 0) > 0
     );
 
-    // If absoluteNumber is present, use it to dedupe “true” episodes
     const hasAbsolute = mainline.some((e) => (e.absoluteNumber ?? 0) > 0);
     if (!hasAbsolute) return mainline;
 
@@ -113,14 +115,22 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
     const hasEpisode = typeof episodeCount === "number" && episodeCount > 0;
     const hasDate = Boolean(dateStart);
 
-    setEpisodeStartError(
-      hasEpisode ? null : "Episode start is required"
-    );
+    setEpisodeStartError(hasEpisode ? null : "Episode start is required");
     setDateStartError(hasDate ? null : "Pick a start date");
 
-    if (!hasEpisode || !hasDate) return;
+    if (!hasEpisode || !hasDate || !activeShow) return;
 
-    // Additional add logic (event creation etc.) can be inserted here.
+    const events = createShowEvents(
+      activeShow.name,
+      activeShow.episodes ?? [],
+      episodeCount ?? 1,
+      dateStart
+    );
+
+    if (!events.length) return;
+
+    onCreate(events);
+    handleClose();
   };
 
   const handleDateChange = (value: Date | string | null) => {
@@ -166,7 +176,12 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Modal opened={opened} onClose={handleClose} size="100%" title={activeShow?.name} >
+        <Modal
+          opened={opened}
+          onClose={handleClose}
+          size="100%"
+          title={activeShow?.name}
+        >
           <div className="flex gap-4">
             <img
               src={activeShow?.image}
@@ -205,6 +220,21 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
                 value={dateStart}
                 error={dateStartError ?? undefined}
                 onChange={handleDateChange}
+                presets={[
+                  { value: dayjs().format("YYYY-MM-DD"), label: "Today" },
+                  {
+                    value: dayjs().add(1, "day").format("YYYY-MM-DD"),
+                    label: "Tomorrow",
+                  },
+                  {
+                    value: dayjs().add(7, "day").format("YYYY-MM-DD"),
+                    label: "Next week",
+                  },
+                  {
+                    value: dayjs().add(1, "month").format("YYYY-MM-DD"),
+                    label: "Next month",
+                  },
+                ]}
               />
               <Button variant="filled" onClick={handleAdd}>
                 Add
@@ -247,30 +277,51 @@ export default function ShowCreator({ onCreate }: ShowCreatorProps) {
   );
 }
 
-function generateEvents(
+function createShowEvents(
   showName: string,
-  episodeCount: number,
-  dateStart: string
+  episodes: Episode[],
+  startingEpisode: number,
+  dateStart: string | null
 ): EventInput[] {
-  const events: EventInput[] = [];
-  const startDate = new Date(dateStart);
+  if (!dateStart) return [];
 
-  for (let i = 0; i < episodeCount; i++) {
-    const episodeDate = new Date(startDate);
-    episodeDate.setDate(startDate.getDate() + i * 7); // Assuming weekly episodes
+  const startDate = dayjs(dateStart);
+  if (!startDate.isValid()) return [];
 
-    events.push({
-      title: `${showName} - Episode ${i + 1}`,
-      start: episodeDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+  const normalizedEpisode =
+    startingEpisode && startingEpisode > 0 ? Math.floor(startingEpisode) : 1;
+
+  const sortedEpisodes = [...episodes].sort((a, b) => {
+    const seasonA = a.seasonNumber ?? 0;
+    const seasonB = b.seasonNumber ?? 0;
+    if (seasonA !== seasonB) return seasonA - seasonB;
+
+    const numberA = a.number ?? a.absoluteNumber ?? 0;
+    const numberB = b.number ?? b.absoluteNumber ?? 0;
+    return numberA - numberB;
+  });
+
+  const relevantEpisodes = sortedEpisodes.slice(
+    Math.min(Math.max(normalizedEpisode - 1, 0), sortedEpisodes.length)
+  );
+
+  return relevantEpisodes.map((episode, index) => {
+    const date = startDate.add(index * 7, "day");
+
+    const season = episode.seasonNumber ?? 1;
+    const number = episode.number ?? normalizedEpisode + index;
+
+    return {
+      title: `${showName} - S${season}E${number}`,
+      start: date.format("YYYY-MM-DD"),
       allDay: true,
       extendedProps: {
-        subtitle: `Episode ${i + 1}`,
-        meta: `Season 1`,
+        subtitle: `Episode ${number}`,
+        meta: `Season ${season}`,
         color: "#5D9CEC",
       },
-    });
-  }
-  return events;
+    };
+  });
 }
 
 function normaliseShow(tvdb: any): TvdbShow {
