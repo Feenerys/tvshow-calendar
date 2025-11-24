@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 const API_BASE = 'https://api4.thetvdb.com/v4'
