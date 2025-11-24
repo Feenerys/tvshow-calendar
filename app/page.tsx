@@ -73,7 +73,7 @@ export default function Home() {
           
         </header> */}
 
-        <main className="flex flex-col max-h-[calc(100vh-100px)] overflow-auto p-6">
+        <main className="flex flex-col max-h-[calc(100vh)] overflow-auto p-6">
           <Calendar
             events={events}
             onEventClick={(event) => {
