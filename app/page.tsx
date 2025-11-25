@@ -17,12 +17,15 @@ export default function Home() {
 
   const handleDeleteEvent = () => {
     if (!activeEvent) return;
+    const targetGroupId = activeEvent.groupId;
     setEvents((prev) =>
-      prev.filter(
-        (event) =>
-          event.title !== activeEvent.title ||
-          event.start !== activeEvent.startStr
-      )
+      targetGroupId
+        ? prev.filter((event) => event.groupId !== targetGroupId)
+        : prev.filter(
+            (event) =>
+              event.title !== activeEvent.title ||
+              event.start !== activeEvent.startStr
+          )
     );
     close();
   };
@@ -30,7 +33,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen  text-white">
       <Modal opened={opened} onClose={close} title={activeEvent?.title}>
-        <Button onClick={handleDeleteEvent}>Delete</Button>
+        <Button onClick={handleDeleteEvent}>Delete Show</Button>
       </Modal>
 
       <aside className="flex w-60 flex-col gap-6 border-r border-zinc-900 bg-[#1a1a1a] px-6 py-8">
