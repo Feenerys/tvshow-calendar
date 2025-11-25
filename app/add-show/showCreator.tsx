@@ -30,6 +30,7 @@ type Episode = {
   isMovie?: number;
   runtime?: number | null;
   aired?: string;
+  name?: string;
 };
 
 type SeriesEpisodesResult = {
@@ -312,15 +313,20 @@ function createShowEvents(
 
     const season = episode.seasonNumber ?? 1;
     const number = episode.number ?? normalizedEpisode + index;
+    const absNumber = episode.absoluteNumber ?? null;
+    const name =
+      episode.name ?? `Episode ${number}`;
 
     return {
-      title: `${showName} - Episode ${number}`,
+      title: `${showName}`,
       start: date.format("YYYY-MM-DD"),
       allDay: true,
       groupId: seriesId,
       extendedProps: {
-        subtitle: `Episode ${number}`,
-        meta: `Season ${season}`,
+        name: name,
+        season: season,
+        number: number,
+        absNumber: absNumber,
         color: "#5D9CEC",
       },
     };

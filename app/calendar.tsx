@@ -157,29 +157,34 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
         editable
         eventDurationEditable={false}
         eventContent={(info) => {
-          const { subtitle, meta, color } = info.event.extendedProps;
+          const { name, season, number, absNumber, color } =
+            info.event.extendedProps;
           return (
             <div
-              className="pl-2 mt-1 overflow-hidden text-foreground border-b border-b-gray-500/40"
+              className="p-2 pl-1  mt-1 overflow-hidden text-foreground border-b border-b-gray-500/40 flex flex-col gap-0.5"
               style={{ borderLeft: `4px solid ${color || "#888"}` }}
             >
               <div
-                className="text-sm font-medium leading-snug text-ellipsis overflow-hidden whitespace-nowrap"
+                className="text-md font-bold leading-snug text-ellipsis overflow-hidden whitespace-nowrap"
                 title={info.event.title}
               >
                 {info.event.title}
               </div>
-              {subtitle && (
-                <div
-                  className="text-xs  text-ellipsis overflow-hidden whitespace-nowrap"
-                  title={subtitle}
-                >
-                  {subtitle}
+              <div className="flex flex-col text-xs justify-between gap-0.5">
+                {name && (
+                  <div
+                    className="flex-1 font-medium text-ellipsis overflow-hidden whitespace-nowrap"
+                    title={name}
+                  >
+                    {name}
+                  </div>
+                )}
+                <div className="">
+                  {info.timeText}
+                  {season ? `${season}` : ""}x
+                  {number ? `${String(number).padStart(2, "0")}` : ""}
+                  {absNumber ? `(${absNumber})` : ""}
                 </div>
-              )}
-              <div className="text-[11px] mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap">
-                {info.timeText}
-                {meta ? ` • ${meta}` : ""}
               </div>
             </div>
           );
