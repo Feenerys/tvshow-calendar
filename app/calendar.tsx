@@ -36,6 +36,7 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
     setModalOpened(false);
   };
 
+  //TODO: figure out a way to move individual episodes
   const handleConfirmDrop = (scope: DropScope) => {
     if (!pendingDrop) return;
 
@@ -46,13 +47,27 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
         ? "all continuing events"
         : "this event only";
 
-    const confirmed = confirm(
-      `${pendingDrop.event.title} was dropped on ${pendingDrop.event.startStr}\n\n` +
-        `Apply this change to ${scopeMessage}?`
-    );
+    if (scope !== "all") {
+      const delta = pendingDrop.delta;
+      const dropStartTime = pendingDrop.event.start?.getTime();
+      const allScopedEvents = Array.from(
+        new Set([pendingDrop.event, ...pendingDrop.relatedEvents])
+      );
 
-    if (!confirmed) {
+      const eventsToKeep =
+        scope === "single"
+          ? [pendingDrop.event]
+          : allScopedEvents.filter((event) => {
+              const startTime = event.start?.getTime();
+              return (
+                typeof startTime === "number" &&
+                typeof dropStartTime === "number" &&
+                startTime >= dropStartTime
+              );
+            });
+
       pendingDrop.revert();
+      eventsToKeep.forEach((event) => event.moveDates(delta));
     }
 
     setPendingDrop(null);
@@ -95,7 +110,7 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
               >
                 Change all events ({relatedEvents.length})
               </Button>
-              <Button
+              {/* <Button
                 fullWidth
                 variant="outline"
                 onClick={() => handleConfirmDrop("single")}
@@ -110,7 +125,7 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
                 color="grape"
               >
                 Change all continuing events ({continuingCount})
-              </Button>
+              </Button> */}
             </>
           ) : (
             <Button fullWidth onClick={() => handleConfirmDrop("single")}>
