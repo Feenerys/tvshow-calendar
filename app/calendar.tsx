@@ -1,60 +1,177 @@
 "use client";
 
+import { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventInput } from "@fullcalendar/core/index.js";
-import { EventClickArg } from "@fullcalendar/core/index.js";
+import { EventClickArg, EventDropArg } from "@fullcalendar/core/index.js";
+import { Button, Modal } from "@mantine/core";
+
+type DropScope = "all" | "single" | "continuing";
+
 interface CalendarProps {
   events: EventInput[];
   onEventClick: (event: EventClickArg) => void;
 }
 
 export default function Calendar({ events, onEventClick }: CalendarProps) {
+  const [pendingDrop, setPendingDrop] = useState<EventDropArg | null>(null);
+  const [modalOpened, setModalOpened] = useState(false);
+
+  const relatedEvents = pendingDrop?.relatedEvents ?? [];
+  const currentStartTime = pendingDrop?.event?.start?.getTime();
+  const continuingCount = relatedEvents.filter((relatedEvent) => {
+    const relatedStartTime = relatedEvent.start?.getTime();
+    return (
+      typeof relatedStartTime === "number" &&
+      typeof currentStartTime === "number" &&
+      relatedStartTime > currentStartTime
+    );
+  }).length;
+
+  const handleCloseModal = () => {
+    pendingDrop?.revert();
+    setPendingDrop(null);
+    setModalOpened(false);
+  };
+
+  const handleConfirmDrop = (scope: DropScope) => {
+    if (!pendingDrop) return;
+
+    const scopeMessage =
+      scope === "all"
+        ? "all events"
+        : scope === "continuing"
+        ? "all continuing events"
+        : "this event only";
+
+    const confirmed = confirm(
+      `${pendingDrop.event.title} was dropped on ${pendingDrop.event.startStr}\n\n` +
+        `Apply this change to ${scopeMessage}?`
+    );
+
+    if (!confirmed) {
+      pendingDrop.revert();
+    }
+
+    setPendingDrop(null);
+    setModalOpened(false);
+  };
+
+  const handleDrop = (info: EventDropArg) => {
+    setPendingDrop(info);
+    setModalOpened(true);
+  };
+
   return (
-    <FullCalendar
-      plugins={[dayGridPlugin, interactionPlugin]}
-      initialView="dayGridWeek"
-      headerToolbar={{
-        left: "prev,next today",
-        center: "title",
-        right: "dayGridMonth,dayGridWeek,dayGridDay",
-      }}
-      contentHeight="auto"
-      buttonText={{ today: "Today", month: "Month", week: "Week", day: "Day" }}
-      events={events}
-      editable
-      eventDurationEditable={false}
-      eventContent={(arg) => {
-        const { subtitle, meta, color } = arg.event.extendedProps;
-        return (
-          <div
-            className="pl-2 mt-1 overflow-hidden text-foreground border-b border-b-gray-500/40"
-            style={{ borderLeft: `4px solid ${color || "#888"}` }}
-          >
-            <div
-              className="text-sm font-medium leading-snug text-ellipsis overflow-hidden whitespace-nowrap"
-              title={arg.event.title}
-            >
-              {arg.event.title}
-            </div>
-            {subtitle && (
-              <div
-                className="text-xs  text-ellipsis overflow-hidden whitespace-nowrap"
-                title={subtitle}
+    <>
+      <Modal
+        opened={modalOpened}
+        onClose={handleCloseModal}
+        title={`Change date for ${pendingDrop?.event.title}`}
+        centered
+      >
+        <p className="text-sm text-zinc-400">
+          {relatedEvents.length
+            ? `This show has ${relatedEvents.length} related appearance${
+                relatedEvents.length === 1 ? "" : "s"
+              }${
+                continuingCount
+                  ? ` and ${continuingCount} continuing event${
+                      continuingCount === 1 ? "" : "s"
+                    }`
+                  : ""
+              }.`
+            : "No related events, so only this event will move."}
+        </p>
+        <div className="mt-4 flex flex-col gap-3">
+          {relatedEvents.length ? (
+            <>
+              <Button
+                fullWidth
+                onClick={() => handleConfirmDrop("all")}
+                color="grape"
               >
-                {subtitle}
+                Change all events ({relatedEvents.length})
+              </Button>
+              <Button
+                fullWidth
+                variant="outline"
+                onClick={() => handleConfirmDrop("single")}
+                color="grape"
+              >
+                Change this event only
+              </Button>
+              <Button
+                fullWidth
+                variant="outline"
+                onClick={() => handleConfirmDrop("continuing")}
+                color="grape"
+              >
+                Change all continuing events ({continuingCount})
+              </Button>
+            </>
+          ) : (
+            <Button fullWidth onClick={() => handleConfirmDrop("single")}>
+              Change this event only
+            </Button>
+          )}
+          <Button fullWidth variant="default" onClick={handleCloseModal}>
+            Revert change
+          </Button>
+        </div>
+      </Modal>
+
+      <FullCalendar
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridWeek"
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,dayGridWeek,dayGridDay",
+        }}
+        contentHeight="auto"
+        buttonText={{
+          today: "Today",
+          month: "Month",
+          week: "Week",
+          day: "Day",
+        }}
+        events={events}
+        editable
+        eventDurationEditable={false}
+        eventContent={(info) => {
+          const { subtitle, meta, color } = info.event.extendedProps;
+          return (
+            <div
+              className="pl-2 mt-1 overflow-hidden text-foreground border-b border-b-gray-500/40"
+              style={{ borderLeft: `4px solid ${color || "#888"}` }}
+            >
+              <div
+                className="text-sm font-medium leading-snug text-ellipsis overflow-hidden whitespace-nowrap"
+                title={info.event.title}
+              >
+                {info.event.title}
               </div>
-            )}
-            <div className="text-[11px] mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap">
-              {arg.timeText}
-              {meta ? ` • ${meta}` : ""}
+              {subtitle && (
+                <div
+                  className="text-xs  text-ellipsis overflow-hidden whitespace-nowrap"
+                  title={subtitle}
+                >
+                  {subtitle}
+                </div>
+              )}
+              <div className="text-[11px] mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap">
+                {info.timeText}
+                {meta ? ` • ${meta}` : ""}
+              </div>
             </div>
-          </div>
-        );
-      }}
-      eventClick={(info) => onEventClick(info)}
-      
-    />
+          );
+        }}
+        eventClick={(info) => onEventClick(info)}
+        eventDrop={handleDrop}
+      />
+    </>
   );
 }
